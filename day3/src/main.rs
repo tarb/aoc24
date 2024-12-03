@@ -36,11 +36,14 @@ fn part2() -> usize {
             Some(_) => {
                 let a = cap[4].parse::<usize>();
                 let b = cap[5].parse::<usize>();
-                a.and_then(|a| b.map(|b| (a, b)))
-                    .ok()
-                    .map(|(n1, n2)| Instruction::Mul(n1, n2))
+                let nums = a.and_then(|a| b.map(|b| (a, b)));
+
+                match nums {
+                    Ok((n1, n2)) => Some(Instruction::Mul(n1, n2)),
+                    Err(_) => None,
+                }
             }
-            None => None,
+            _ => None,
         })
         .fold(
             (Instruction::Do, 0),
