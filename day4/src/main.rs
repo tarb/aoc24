@@ -7,7 +7,7 @@ fn main() {
 
 fn part1() -> usize {
     let board = INPUT.lines().collect::<Vec<_>>();
-    let bounds = (board.len(), board[0].len());
+    let (bounds_r, bounds_c) = (board.len(), board[0].len());
 
     let positions = board.iter().enumerate().flat_map(|(c, s)| {
         s.bytes()
@@ -16,17 +16,17 @@ fn part1() -> usize {
             .map(move |(r, _)| (c, r))
             .flat_map(|(r, c)| {
                 let up = (r > 2).then(|| [(r, c), (r - 1, c), (r - 2, c), (r - 3, c)]);
-                let down = (r + 3 < bounds.0).then(|| [(r, c), (r + 1, c), (r + 2, c), (r + 3, c)]);
+                let down = (r + 3 < bounds_r).then(|| [(r, c), (r + 1, c), (r + 2, c), (r + 3, c)]);
                 let left = (c > 2).then(|| [(r, c), (r, c - 1), (r, c - 2), (r, c - 3)]);
                 let right =
-                    (c + 3 < bounds.1).then(|| [(r, c), (r, c + 1), (r, c + 2), (r, c + 3)]);
-                let down_left = (r + 3 < bounds.0 && c > 2)
+                    (c + 3 < bounds_c).then(|| [(r, c), (r, c + 1), (r, c + 2), (r, c + 3)]);
+                let down_left = (r + 3 < bounds_r && c > 2)
                     .then(|| [(r, c), (r + 1, c - 1), (r + 2, c - 2), (r + 3, c - 3)]);
-                let down_right = (r + 3 < bounds.0 && c + 3 < bounds.1)
+                let down_right = (r + 3 < bounds_r && c + 3 < bounds_c)
                     .then(|| [(r, c), (r + 1, c + 1), (r + 2, c + 2), (r + 3, c + 3)]);
                 let up_left = (r > 2 && c > 2)
                     .then(|| [(r, c), (r - 1, c - 1), (r - 2, c - 2), (r - 3, c - 3)]);
-                let up_right = (r > 2 && c + 3 < bounds.1)
+                let up_right = (r > 2 && c + 3 < bounds_c)
                     .then(|| [(r, c), (r - 1, c + 1), (r - 2, c + 2), (r - 3, c + 3)]);
 
                 [
@@ -49,14 +49,14 @@ fn part1() -> usize {
 
 fn part2() -> usize {
     let board = INPUT.lines().collect::<Vec<_>>();
-    let bounds = (board.len(), board[0].len());
+    let (bounds_r, bounds_c) = (board.len(), board[0].len());
 
     let positions = board.iter().enumerate().flat_map(|(c, s)| {
         s.bytes()
             .enumerate()
             .filter(|(_, b)| *b == b'A')
             .map(move |(r, _)| (c, r))
-            .filter(|(r, c)| *r > 0 && *r < bounds.0 - 1 && *c > 0 && *c < bounds.1 - 1)
+            .filter(|(r, c)| *r > 0 && *r < bounds_r - 1 && *c > 0 && *c < bounds_c - 1)
             .map(|(r, c)| {
                 [
                     (r - 1, c - 1),
