@@ -1,26 +1,28 @@
-use fnv::{FnvHashMap, FnvHashSet};
+use fnv::FnvHashMap;
 use std::cmp::Ordering;
 
 const INPUT: &str = include_str!("./input.txt");
 
 fn main() {
-    let rules = INPUT
-        .lines()
+    // iterate over the input only once, reuse this iterator for both parts
+    let mut lines = INPUT.lines();
+
+    // parse the rules - top of the file
+    let rules = lines
+        .by_ref()
         .take_while(|s| !s.is_empty())
         .map(|s| {
             let (a, b) = s.split_once('|').unwrap();
             [a.parse::<u8>().unwrap(), b.parse::<u8>().unwrap()]
         })
         .fold(FnvHashMap::default(), |mut m, [item, page]| {
-            let values: &mut FnvHashSet<u8> = m.entry(item).or_default();
-            values.insert(page);
+            let values: &mut Vec<u8> = m.entry(item).or_default();
+            values.push(page);
             m
         });
 
-    let pages = INPUT
-        .lines()
-        .skip_while(|s| !s.is_empty())
-        .skip(1) // skip the blank line
+    // parse over the pages - bottom of the file
+    let pages = lines
         .map(|s| {
             s.split(',')
                 .filter_map(|s| s.parse::<u8>().ok())
@@ -32,7 +34,7 @@ fn main() {
     println!("Part 2: {}", part2(&rules, &pages));
 }
 
-fn part1(rules: &FnvHashMap<u8, FnvHashSet<u8>>, pages: &[Vec<u8>]) -> usize {
+fn part1(rules: &FnvHashMap<u8, Vec<u8>>, pages: &[Vec<u8>]) -> usize {
     // iterator of only VALID pages
     let valid_pages = pages.iter().filter(|page| {
         page.iter().enumerate().all(|(i, item)| {
@@ -49,7 +51,7 @@ fn part1(rules: &FnvHashMap<u8, FnvHashSet<u8>>, pages: &[Vec<u8>]) -> usize {
         .sum::<usize>()
 }
 
-fn part2(rules: &FnvHashMap<u8, FnvHashSet<u8>>, pages: &[Vec<u8>]) -> usize {
+fn part2(rules: &FnvHashMap<u8, Vec<u8>>, pages: &[Vec<u8>]) -> usize {
     // iterator of only INVALID pages
     let invalid_pages = pages.iter().filter(|page| {
         !page.iter().enumerate().all(|(i, item)| {
