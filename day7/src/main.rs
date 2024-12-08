@@ -30,15 +30,15 @@ struct Calibration {
 
 impl Calibration {
     pub fn new(line: &str) -> Option<Self> {
-        let mut nums = line
-            .split(&[' ', ':'])
-            .filter(|&c| !c.is_empty())
-            .map(|num_str| num_str.parse::<u64>().unwrap());
+        let (answer, line) = line.split_once(": ")?;
 
-        nums.next().map(|n| Self {
-            answer: n,
-            input: nums.collect(),
-        })
+        let answer = answer.parse::<u64>().ok()?;
+        let input = line
+            .split(' ')
+            .filter_map(|num_str| num_str.parse::<u64>().ok())
+            .collect::<Vec<_>>();
+
+        (!input.is_empty()).then_some(Self { answer, input })
     }
 
     pub fn is_valid_p1(&self) -> bool {
@@ -46,8 +46,8 @@ impl Calibration {
     }
 
     fn search_p1(target: u64, current: u64, numbers: &[u64]) -> bool {
-        if numbers.len() == 1 {
-            return (numbers[0] * current == target) || (numbers[0] + current == target);
+        if numbers.is_empty() || current > target {
+            return current == target;
         }
 
         Self::search_p1(target, current + numbers[0], &numbers[1..])
@@ -59,10 +59,8 @@ impl Calibration {
     }
 
     fn search_p2(target: u64, current: u64, numbers: &[u64]) -> bool {
-        if numbers.len() == 1 {
-            return (numbers[0] * current == target)
-                || (numbers[0] + current == target)
-                || (concat(current, numbers[0]) == target);
+        if numbers.is_empty() || current > target {
+            return current == target;
         }
 
         Self::search_p2(target, current + numbers[0], &numbers[1..])
