@@ -1,0 +1,8 @@
+[package]
+name = "day8"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+fnv = "1.0.3"
+itertools = "0.13.0"
