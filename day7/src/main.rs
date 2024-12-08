@@ -9,7 +9,7 @@ fn part1() -> u64 {
     INPUT
         .lines()
         .filter_map(Calibration::new)
-        .filter(|c| c.is_valid_p1())
+        .filter(|c| c.is_valid(Calibration::search_p1))
         .map(|c| c.answer)
         .sum::<u64>()
 }
@@ -18,7 +18,7 @@ fn part2() -> u64 {
     INPUT
         .lines()
         .filter_map(Calibration::new)
-        .filter(|c| c.is_valid_p2())
+        .filter(|c| c.is_valid(Calibration::search_p2))
         .map(|c| c.answer)
         .sum::<u64>()
 }
@@ -41,8 +41,11 @@ impl Calibration {
         (!input.is_empty()).then_some(Self { answer, input })
     }
 
-    pub fn is_valid_p1(&self) -> bool {
-        Self::search_p1(self.answer, self.input[0], &self.input[1..])
+    pub fn is_valid<F>(&self, f: F) -> bool
+    where
+        F: Fn(u64, u64, &[u64]) -> bool,
+    {
+        f(self.answer, self.input[0], &self.input[1..])
     }
 
     fn search_p1(target: u64, current: u64, numbers: &[u64]) -> bool {
@@ -52,10 +55,6 @@ impl Calibration {
 
         Self::search_p1(target, current + numbers[0], &numbers[1..])
             || Self::search_p1(target, current * numbers[0], &numbers[1..])
-    }
-
-    pub fn is_valid_p2(&self) -> bool {
-        Self::search_p2(self.answer, self.input[0], &self.input[1..])
     }
 
     fn search_p2(target: u64, current: u64, numbers: &[u64]) -> bool {

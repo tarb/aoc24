@@ -12,7 +12,14 @@ fn main() {
 
 fn part1() -> usize {
     let mut board = Board::new(INPUT);
-    while board.advance() == State::Going {}
+
+    loop {
+        let state = board.advance();
+        match state {
+            State::Running => continue,
+            _ => break
+        }
+    }
 
     board.visited()
 }
@@ -20,29 +27,25 @@ fn part1() -> usize {
 fn part2() -> usize {
     let board = Board::new(INPUT);
 
-    let mut loop_count = 0;
-    for i in 0..board.tiles.len() {
-        if board.tiles[i] == Tile::Blocked {
-            continue;
-        }
+    board
+        .tiles
+        .iter()
+        .enumerate()
+        .filter(|&(_, t)| matches!(t, Tile::Empty))
+        .filter_map(|(i, _)| {
+            let mut board = board.clone();
+            board.tiles[i] = Tile::Blocked;
 
-        let mut board = board.clone();
-        board.tiles[i] = Tile::Blocked;
-
-        loop {
-            let state = board.advance();
-            match state {
-                State::Going => {}
-                State::Ended => break,
-                State::Loop => {
-                    loop_count += 1;
-                    break;
+            loop {
+                let state = board.advance();
+                match state {
+                    State::Running => continue,
+                    State::Ended => break None,
+                    State::Loop => break Some(i),
                 }
             }
-        }
-    }
-
-    loop_count
+        })
+        .count()
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -54,7 +57,7 @@ enum Tile {
 
 #[derive(Copy, Clone, PartialEq)]
 enum State {
-    Going,
+    Running,
     Ended,
     Loop,
 }
@@ -161,7 +164,7 @@ impl Board {
             self.player_pos = next_pos;
         }
 
-        State::Going
+        State::Running
     }
 
     fn visited(&self) -> usize {
