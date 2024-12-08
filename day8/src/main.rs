@@ -1,6 +1,5 @@
 use fnv::FnvHashMap;
 use itertools::Itertools;
-use std::cmp;
 
 const INPUT: &str = include_str!("./input.txt");
 
@@ -14,16 +13,10 @@ fn main() {
 
 fn part1((dim_x, dim_y): (i32, i32), vals: &[((i32, i32), (i32, i32))]) -> usize {
     vals.iter()
-        .flat_map(|(a, b)| {
-            let ((ax, ay), (bx, by)) = if a.0 < b.0 { (a, b) } else { (b, a) };
-            let abs_x = (a.0 - b.0).abs();
-            let abs_y = (a.1 - b.1).abs();
-
-            if by > ay {
-                [(ax - abs_x, ay - abs_y), (bx + abs_x, by + abs_y)]
-            } else {
-                [(ax - abs_x, ay + abs_y), (bx + abs_x, by - abs_y)]
-            }
+        .flat_map(|((ax, ay), (bx, by))| {
+            let diff_x = ax - bx;
+            let diff_y = ay - by;
+            [(ax + diff_x, ay + diff_y), (bx - diff_x, by - diff_y)]
         })
         .filter(|&(x, y)| x >= 0 && y >= 0 && x < dim_x && y < dim_y)
         .unique()
@@ -32,30 +25,20 @@ fn part1((dim_x, dim_y): (i32, i32), vals: &[((i32, i32), (i32, i32))]) -> usize
 
 fn part2((dim_x, dim_y): (i32, i32), vals: &[((i32, i32), (i32, i32))]) -> usize {
     vals.iter()
-        .flat_map(|(a, b)| {
-            let ((ax, ay), (bx, by)) = if a.0 < b.0 { (a, b) } else { (b, a) };
-            let abs_x = (a.0 - b.0).abs();
-            let abs_y = (a.1 - b.1).abs();
+        .flat_map(|((ax, ay), (bx, by))| {
+            let diff_x = ax - bx;
+            let diff_y = ay - by;
 
-            if by > ay {
-                let min_count = cmp::min(ax / abs_x, ay / abs_y);
-                let max_count = cmp::min((dim_x - ax) / abs_x, (dim_y - ay) / abs_y);
+            let in_range = |&(x, y): &(i32, i32)| x >= 0 && y >= 0 && x < dim_x && y < dim_y;
+            let a_iter = (0..)
+                .map(move |i| (ax + (i * diff_x), ay + (i * diff_y)))
+                .take_while(in_range);
+            let b_iter = (0..)
+                .map(move |i| (bx - (i * diff_x), by - (i * diff_y)))
+                .take_while(in_range);
 
-                let down = (0..=min_count).map(|i| (ax - (i * abs_x), ay - (i * abs_y)));
-                let up = (0..=max_count).map(|i| (bx + (i * abs_x), by + (i * abs_y)));
-
-                down.chain(up).collect::<Vec<_>>()
-            } else {
-                let min_count = cmp::min(ax / abs_x, (dim_y - ay) / abs_y);
-                let max_count = cmp::min((dim_x - ax) / abs_x, ay / abs_y);
-
-                let down = (0..=min_count).map(|i| (ax - (i * abs_x), ay + (i * abs_y)));
-                let up = (0..=max_count).map(|i| (bx + (i * abs_x), by - (i * abs_y)));
-
-                down.chain(up).collect::<Vec<_>>()
-            }
+            a_iter.chain(b_iter)
         })
-        .filter(|&(x, y)| x >= 0 && y >= 0 && x < dim_x && y < dim_y)
         .unique()
         .count()
 }
